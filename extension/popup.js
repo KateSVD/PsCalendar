@@ -1,7 +1,5 @@
 const checkButton = document.getElementById("checkButton");
-const resultLabel = document.getElementById("result");
 const scanTabsButton = document.getElementById("scanTabsButton");
-const scanResults = document.getElementById("scanResults");
 const dashboardPrompt = document.getElementById("dashboardPrompt");
 
 const REQUIRED_DASHBOARD_URL = "https://practiscore.com/dashboard/home";
@@ -179,106 +177,6 @@ function isPractiScoreRegisterUrl(rawUrl) {
   }
 }
 
-function renderResults(links) {
-  resultLabel.innerHTML = "";
-
-  if (!links.length) {
-    resultLabel.textContent = "No event links found.";
-    return;
-  }
-
-  const title = document.createElement("div");
-  title.id = "resultTitle";
-  title.textContent = "Event Links Found:";
-
-  const list = document.createElement("ul");
-  list.id = "resultList";
-
-  links.forEach((link) => {
-    const item = document.createElement("li");
-    const anchor = document.createElement("a");
-    const text = link.text ? link.text : link.href;
-
-    const normalizedHref = normalizeEventLink(link.href);
-    anchor.href = normalizedHref;
-    anchor.textContent = text;
-    anchor.target = "_blank";
-    anchor.rel = "noopener noreferrer";
-
-    item.appendChild(anchor);
-    list.appendChild(item);
-  });
-
-  resultLabel.appendChild(title);
-  resultLabel.appendChild(list);
-}
-
-function renderScanResults(results) {
-  scanResults.innerHTML = "";
-
-  if (!results.length) {
-    scanResults.textContent = "No PractiScore register tabs found.";
-    return;
-  }
-
-  const title = document.createElement("div");
-  title.id = "scanResultsTitle";
-  title.textContent = "Scan Results:";
-
-  const list = document.createElement("ul");
-  list.id = "scanResultsList";
-
-  const toGoogleDate = (iso) => iso.replace(/[-:]/g, "").split(".")[0];
-
-  results.forEach((item) => {
-    const listItem = document.createElement("li");
-    const eventName = item.eventName || item.title || item.url || "(Untitled tab)";
-    const hasMatchInfo = Boolean(item.matchStartISO || item.matchEndISO);
-
-    if (!hasMatchInfo) {
-      listItem.textContent = `${eventName} — Match information not found.`;
-      list.appendChild(listItem);
-      return;
-    }
-
-    const nameLine = document.createElement("div");
-    nameLine.textContent = eventName;
-
-    const startLine = document.createElement("div");
-    startLine.textContent = `Start: ${item.matchStartISO}`;
-
-    const endLine = document.createElement("div");
-    endLine.textContent = `End: ${item.matchEndISO}`;
-
-    const googleStart = toGoogleDate(item.matchStartISO);
-    const googleEnd = toGoogleDate(item.matchEndISO);
-    const locationParam = item.locationAddress
-      ? `&location=${encodeURIComponent(item.locationAddress)}`
-      : "";
-    const detailsParam = item.registrationUrl
-      ? `&details=${encodeURIComponent(item.registrationUrl)}`
-      : "";
-    const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
-      eventName
-    )}&dates=${googleStart}/${googleEnd}${locationParam}${detailsParam}`;
-
-    const calendarLink = document.createElement("a");
-    calendarLink.href = calendarUrl;
-    calendarLink.target = "_blank";
-    calendarLink.rel = "noopener noreferrer";
-    calendarLink.textContent = "Add to Google Calendar";
-
-    listItem.appendChild(nameLine);
-    listItem.appendChild(startLine);
-    listItem.appendChild(endLine);
-    listItem.appendChild(calendarLink);
-    list.appendChild(listItem);
-  });
-
-  scanResults.appendChild(title);
-  scanResults.appendChild(list);
-}
-
 async function openEventTabs(links, windowId) {
   const urls = links
     .map((link) => normalizeEventLink(link.href))
@@ -290,33 +188,25 @@ async function openEventTabs(links, windowId) {
 }
 
 async function checkForUpcomingEvents() {
-  resultLabel.textContent = "Checking...";
-
   try {
     const activeTab = await getActiveTab();
     if (!activeTab?.id) {
-      resultLabel.textContent = "No";
       return;
     }
 
     const links = await getEventLinks(activeTab.id);
-    renderResults(links);
     await openEventTabs(links, activeTab.windowId);
   } catch (error) {
     console.error("PsCalendar check failed:", error);
-    resultLabel.textContent = "No event links found.";
   }
 }
 
 async function scanPractiScoreTabs() {
-  scanResults.textContent = "Scanning current tab...";
-
   try {
     const activeTab = await getActiveTab();
     const activeUrl = activeTab?.url || activeTab?.pendingUrl;
 
     if (!activeTab?.id || !isPractiScoreRegisterUrl(activeUrl)) {
-      scanResults.textContent = "Active tab is not a PractiScore register page.";
       return;
     }
 
@@ -326,7 +216,6 @@ async function scanPractiScoreTabs() {
     });
 
     if (!response?.result) {
-      scanResults.textContent = response?.error || "Match information not found.";
       return;
     }
 
@@ -335,7 +224,6 @@ async function scanPractiScoreTabs() {
     const hasMatchInfo = Boolean(result.matchStartISO && result.matchEndISO);
 
     if (!hasMatchInfo) {
-      scanResults.textContent = `${eventName} — Match information not found.`;
       return;
     }
 
@@ -353,10 +241,8 @@ async function scanPractiScoreTabs() {
     )}&dates=${googleStart}/${googleEnd}${locationParam}${detailsParam}`;
 
     await chrome.tabs.create({ windowId: activeTab.windowId, url: calendarUrl });
-    scanResults.textContent = "Google Calendar event opened in a new tab.";
   } catch (error) {
     console.error("PsCalendar tab scan failed:", error);
-    scanResults.textContent = "Unable to scan the current tab.";
   }
 }
 
