@@ -252,9 +252,12 @@ function renderScanResults(results) {
 
     const googleStart = toGoogleDate(item.matchStartISO);
     const googleEnd = toGoogleDate(item.matchEndISO);
+    const locationParam = item.locationAddress
+      ? `&location=${encodeURIComponent(item.locationAddress)}`
+      : "";
     const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
       eventName
-    )}&dates=${googleStart}/${googleEnd}`;
+    )}&dates=${googleStart}/${googleEnd}${locationParam}`;
 
     const calendarLink = document.createElement("a");
     calendarLink.href = calendarUrl;
@@ -336,9 +339,12 @@ async function scanPractiScoreTabs() {
     const toGoogleDate = (iso) => iso.replace(/[-:]/g, "").split(".")[0];
     const googleStart = toGoogleDate(result.matchStartISO);
     const googleEnd = toGoogleDate(result.matchEndISO);
+    const locationParam = result.locationAddress
+      ? `&location=${encodeURIComponent(result.locationAddress)}`
+      : "";
     const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
       eventName
-    )}&dates=${googleStart}/${googleEnd}`;
+    )}&dates=${googleStart}/${googleEnd}${locationParam}`;
 
     await chrome.tabs.create({ windowId: activeTab.windowId, url: calendarUrl });
     scanResults.textContent = "Google Calendar event opened in a new tab.";

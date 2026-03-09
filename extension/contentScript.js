@@ -7,6 +7,36 @@ function normalizeDate(dateString) {
 	return normalized.replace(/\.\d{3}Z$/, "");
 }
 
+function buildLocationAddress() {
+	const paragraphs = Array.from(document.querySelectorAll("p"));
+	const locationParagraph = paragraphs.find((paragraph) => {
+		const text = paragraph.innerText || paragraph.textContent || "";
+		return /location:/i.test(text);
+	});
+
+	if (!locationParagraph) {
+		return "";
+	}
+
+	const text = locationParagraph.innerText || locationParagraph.textContent || "";
+	const locationText = text.replace(/^[\s\S]*?location:\s*/i, "");
+	let locationLines = locationText
+		.split(/\r?\n/)
+		.map((line) => line.trim())
+		.filter(Boolean);
+
+	locationLines = locationLines.filter(
+		(line) => !/(maps\.google|maps\.app\.goo\.gl|google\.com\/maps)/i.test(line)
+	);
+
+	if (!locationLines.length) {
+		return "";
+	}
+
+	const address = locationLines.join(" ");
+	return address || "";
+}
+
 function psCalendarFindMatchTiming() {
 	const paragraphs = Array.from(document.querySelectorAll("p"));
 	const targetParagraph = paragraphs.find((paragraph) => {
@@ -15,6 +45,7 @@ function psCalendarFindMatchTiming() {
 	});
 
 	const eventName = document.title || "";
+	const locationAddress = buildLocationAddress();
 
 	if (!targetParagraph) {
 		const emptyEvent = {
@@ -22,7 +53,8 @@ function psCalendarFindMatchTiming() {
 			matchStart: "",
 			matchEnd: "",
 			matchStartISO: "",
-			matchEndISO: ""
+			matchEndISO: "",
+			locationAddress
 		};
 		chrome.runtime?.sendMessage?.({ type: "EVENT_FOUND", event: emptyEvent });
 		return emptyEvent;
@@ -40,7 +72,8 @@ function psCalendarFindMatchTiming() {
 		matchStart,
 		matchEnd,
 		matchStartISO: normalizeDate(matchStart),
-		matchEndISO: normalizeDate(matchEnd)
+		matchEndISO: normalizeDate(matchEnd),
+		locationAddress
 	};
 
 	chrome.runtime?.sendMessage?.({ type: "EVENT_FOUND", event });
