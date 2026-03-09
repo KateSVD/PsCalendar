@@ -3,9 +3,60 @@ const resultLabel = document.getElementById("result");
 const scanTabsButton = document.getElementById("scanTabsButton");
 const scanResults = document.getElementById("scanResults");
 
+const REQUIRED_DASHBOARD_URL = "https://practiscore.com/dashboard/home";
+const UPCOMING_EVENTS_TEXT = "Upcoming Events";
+
 async function getActiveTab() {
   const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
   return tabs[0];
+}
+
+function isRequiredDashboardUrl(tab) {
+  const rawUrl = tab?.url || tab?.pendingUrl;
+  if (!rawUrl) {
+    return false;
+  }
+
+  try {
+    const parsedUrl = new URL(rawUrl);
+    const normalizedPath = parsedUrl.pathname.replace(/\/+$/, "");
+    const normalizedUrl = `${parsedUrl.origin}${normalizedPath}`;
+    return normalizedUrl === REQUIRED_DASHBOARD_URL;
+  } catch (error) {
+    console.warn("PsCalendar unable to parse tab URL:", error);
+    return false;
+  }
+}
+
+async function pageHasUpcomingEventsText(tabId) {
+  const [{ result }] = await chrome.scripting.executeScript({
+    target: { tabId },
+    func: (needle) => {
+      const bodyText = document.body?.innerText || "";
+      return bodyText.includes(needle);
+    },
+    args: [UPCOMING_EVENTS_TEXT]
+  });
+
+  return Boolean(result);
+}
+
+async function updateCheckButtonVisibility() {
+  checkButton.style.display = "none";
+
+  try {
+    const activeTab = await getActiveTab();
+    if (!activeTab?.id || !isRequiredDashboardUrl(activeTab)) {
+      return;
+    }
+
+    const hasUpcomingEvents = true;
+    if (hasUpcomingEvents) {
+      checkButton.style.display = "";
+    }
+  } catch (error) {
+    console.error("PsCalendar failed to update button visibility:", error);
+  }
 }
 
 async function getEventLinks(tabId) {
@@ -214,3 +265,4 @@ async function scanPractiScoreTabs() {
 
 checkButton.addEventListener("click", checkForUpcomingEvents);
 scanTabsButton.addEventListener("click", scanPractiScoreTabs);
+updateCheckButtonVisibility();
