@@ -5,53 +5,135 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PsCalendar</title>
     <style>
-      body {
-        font-family: Arial, sans-serif;
-        margin: 12px;
-        min-width: 240px;
+      :root {
+        color-scheme: light;
+        --bg: #f5f7fb;
+        --card: #ffffff;
+        --text: #111827;
+        --muted: #4b5563;
+        --primary: #3b82f6;
+        --primary-dark: #2563eb;
+        --border: #d5ddeb;
       }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Arial, sans-serif;
+        margin: 0;
+        min-width: 280px;
+        padding: 16px;
+        background: var(--bg);
+        color: var(--text);
+        text-align: center;
+        border: 1px solid var(--border);
+      }
+
+      h1 {
+        margin: 0 0 12px;
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--text);
+      }
+
       button {
         width: 100%;
-        padding: 8px 10px;
+        max-width: 260px;
+        padding: 10px 12px;
         font-size: 14px;
+        font-weight: 600;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--primary);
+        color: #fff;
         cursor: pointer;
+        transition: background 0.2s ease, transform 0.05s ease;
+        margin: 0 auto;
+        display: block;
       }
+
+      button:hover {
+        background: var(--primary-dark);
+      }
+
+      button:active {
+        transform: translateY(1px);
+      }
+
+      button:focus-visible {
+        outline: 2px solid #93c5fd;
+        outline-offset: 2px;
+      }
+
       .section {
+        margin-top: 16px;
+        padding-top: 12px;
+        border-top: 1px solid var(--border);
+      }
+
+      #dashboardPrompt {
         margin-top: 12px;
+        padding: 10px 12px;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        text-align: center;
       }
-      #result {
-        margin-top: 10px;
+
+      #dashboardLink {
+        color: #93c5fd;
+        text-decoration: none;
+        font-weight: 600;
       }
-      #resultTitle {
-        font-weight: bold;
-        margin-bottom: 6px;
+
+      #dashboardLink:hover {
+        text-decoration: underline;
       }
-      #resultList {
-        margin: 0;
-        padding-left: 18px;
-      }
-      #resultList li {
-        margin-bottom: 6px;
-        word-break: break-word;
-      }
+
+      #result,
       #scanResults {
-        margin-top: 10px;
+        margin-top: 12px;
+        font-size: 13px;
+        color: var(--muted);
+        text-align: left;
       }
+
+      #resultTitle,
       #scanResultsTitle {
-        font-weight: bold;
+        font-weight: 700;
         margin-bottom: 6px;
+        color: var(--text);
       }
+
+      #resultList,
       #scanResultsList {
         margin: 0;
-        padding-left: 18px;
+        padding-left: 16px;
       }
+
+      #resultList li,
       #scanResultsList li {
-        margin-bottom: 6px;
+        margin-bottom: 8px;
         word-break: break-word;
+        color: var(--text);
+      }
+
+      #resultList a,
+      #scanResultsList a {
+        color: #93c5fd;
+        text-decoration: none;
+      }
+
+      #resultList a:hover,
+      #scanResultsList a:hover {
+        text-decoration: underline;
       }
     </style>
   </head>
   <body>
+    <h1>Practiscore Calendar</h1>
     <button id="checkButton">Open all events</button>
     <div id="dashboardPrompt" class="section" style="display: none;">
       <a id="dashboardLink" href="https://practiscore.com/dashboard/home" target="_blank" rel="noopener noreferrer">
