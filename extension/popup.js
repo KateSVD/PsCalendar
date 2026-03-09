@@ -2,6 +2,7 @@ const checkButton = document.getElementById("checkButton");
 const resultLabel = document.getElementById("result");
 const scanTabsButton = document.getElementById("scanTabsButton");
 const scanResults = document.getElementById("scanResults");
+const dashboardPrompt = document.getElementById("dashboardPrompt");
 
 const REQUIRED_DASHBOARD_URL = "https://practiscore.com/dashboard/home";
 const UPCOMING_EVENTS_TEXT = "Upcoming Events";
@@ -44,18 +45,55 @@ async function pageHasUpcomingEventsText(tabId) {
 async function updateCheckButtonVisibility() {
   checkButton.style.display = "none";
 
+  if (dashboardPrompt) {
+    dashboardPrompt.style.display = "none";
+  }
+
   try {
     const activeTab = await getActiveTab();
-    if (!activeTab?.id || !isRequiredDashboardUrl(activeTab)) {
+    if (!activeTab?.id) {
+      if (dashboardPrompt) {
+        dashboardPrompt.style.display = "";
+      }
       return;
     }
 
-    const hasUpcomingEvents = true;
-    if (hasUpcomingEvents) {
-      checkButton.style.display = "";
+    const activeUrl = activeTab?.url || activeTab?.pendingUrl;
+    const onDashboard = isRequiredDashboardUrl(activeTab);
+    const onRegisterPage = isPractiScoreRegisterUrl(activeUrl);
+
+    if (!onDashboard && !onRegisterPage) {
+      if (dashboardPrompt) {
+        dashboardPrompt.style.display = "";
+      }
+      return;
+    }
+
+    if (onDashboard) {
+      const hasUpcomingEvents = true;
+      if (hasUpcomingEvents) {
+        checkButton.style.display = "";
+      }
     }
   } catch (error) {
     console.error("PsCalendar failed to update button visibility:", error);
+  }
+}
+
+async function updateScanButtonVisibility() {
+  scanTabsButton.style.display = "none";
+
+  try {
+    const activeTab = await getActiveTab();
+    const activeUrl = activeTab?.url || activeTab?.pendingUrl;
+    const onRegisterPage = Boolean(activeTab?.id && isPractiScoreRegisterUrl(activeUrl));
+    if (!onRegisterPage) {
+      return;
+    }
+
+    scanTabsButton.style.display = "";
+  } catch (error) {
+    console.error("PsCalendar failed to update scan button visibility:", error);
   }
 }
 
@@ -313,3 +351,4 @@ async function scanPractiScoreTabs() {
 checkButton.addEventListener("click", checkForUpcomingEvents);
 scanTabsButton.addEventListener("click", scanPractiScoreTabs);
 updateCheckButtonVisibility();
+updateScanButtonVisibility();
