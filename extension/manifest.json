@@ -1,0 +1,14 @@
+{
+  "name": "PsCalendar",
+  "description": "Detects upcoming events text on the current page.",
+  "version": "0.1.0",
+  "manifest_version": 3,
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "permissions": ["activeTab", "scripting", "tabs"],
+  "host_permissions": ["https://practiscore.com/*"],
+  "background": {
+    "service_worker": "background.js"
+  }
+}

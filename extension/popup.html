@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PsCalendar</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 12px;
+        min-width: 240px;
+      }
+      button {
+        width: 100%;
+        padding: 8px 10px;
+        font-size: 14px;
+        cursor: pointer;
+      }
+      .section {
+        margin-top: 12px;
+      }
+      #result {
+        margin-top: 10px;
+      }
+      #resultTitle {
+        font-weight: bold;
+        margin-bottom: 6px;
+      }
+      #resultList {
+        margin: 0;
+        padding-left: 18px;
+      }
+      #resultList li {
+        margin-bottom: 6px;
+        word-break: break-word;
+      }
+      #scanResults {
+        margin-top: 10px;
+      }
+      #scanResultsTitle {
+        font-weight: bold;
+        margin-bottom: 6px;
+      }
+      #scanResultsList {
+        margin: 0;
+        padding-left: 18px;
+      }
+      #scanResultsList li {
+        margin-bottom: 6px;
+        word-break: break-word;
+      }
+    </style>
+  </head>
+  <body>
+    <button id="checkButton">Check for Upcoming Events</button>
+    <div id="result"></div>
+    <div class="section">
+      <button id="scanTabsButton">Scan PractiScore Tabs</button>
+      <div id="scanResults"></div>
+    </div>
+    <script src="popup.js"></script>
+  </body>
+</html>
