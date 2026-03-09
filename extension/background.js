@@ -43,7 +43,8 @@ async function checkTabForMatchTiming(tabId) {
     matchEnd: result?.matchEnd || "",
     matchStartISO: result?.matchStartISO || "",
     matchEndISO: result?.matchEndISO || "",
-    locationAddress: result?.locationAddress || ""
+    locationAddress: result?.locationAddress || "",
+    registrationUrl: result?.registrationUrl || ""
   };
 }
 
@@ -72,7 +73,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         matchEnd: matchInfo.matchEnd,
         matchStartISO: matchInfo.matchStartISO,
         matchEndISO: matchInfo.matchEndISO,
-        locationAddress: matchInfo.locationAddress
+        locationAddress: matchInfo.locationAddress,
+        registrationUrl: matchInfo.registrationUrl
       };
 
       sendResponse({ result });
@@ -88,7 +90,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           matchEnd: "",
           matchStartISO: "",
           matchEndISO: "",
-          locationAddress: ""
+          locationAddress: "",
+          registrationUrl: ""
         }
       });
     }

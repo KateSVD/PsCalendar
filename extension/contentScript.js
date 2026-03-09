@@ -46,6 +46,7 @@ function psCalendarFindMatchTiming() {
 
 	const eventName = document.title || "";
 	const locationAddress = buildLocationAddress();
+	const registrationUrl = window.location?.href || "";
 
 	if (!targetParagraph) {
 		const emptyEvent = {
@@ -54,7 +55,8 @@ function psCalendarFindMatchTiming() {
 			matchEnd: "",
 			matchStartISO: "",
 			matchEndISO: "",
-			locationAddress
+			locationAddress,
+			registrationUrl
 		};
 		chrome.runtime?.sendMessage?.({ type: "EVENT_FOUND", event: emptyEvent });
 		return emptyEvent;
@@ -73,7 +75,8 @@ function psCalendarFindMatchTiming() {
 		matchEnd,
 		matchStartISO: normalizeDate(matchStart),
 		matchEndISO: normalizeDate(matchEnd),
-		locationAddress
+		locationAddress,
+		registrationUrl
 	};
 
 	chrome.runtime?.sendMessage?.({ type: "EVENT_FOUND", event });
