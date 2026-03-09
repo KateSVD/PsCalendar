@@ -123,6 +123,24 @@ function normalizeEventLink(href) {
   return href.includes("/shooter/") ? href.replace(/\/shooter\/.*/i, "/register") : href;
 }
 
+function isPractiScoreRegisterUrl(rawUrl) {
+  if (!rawUrl) {
+    return false;
+  }
+
+  try {
+    const parsedUrl = new URL(rawUrl);
+    if (parsedUrl.origin !== "https://practiscore.com") {
+      return false;
+    }
+
+    return /^\/[^/]+\/register\/?$/i.test(parsedUrl.pathname);
+  } catch (error) {
+    console.warn("PsCalendar unable to parse tab URL:", error);
+    return false;
+  }
+}
+
 function renderResults(links) {
   resultLabel.innerHTML = "";
 
@@ -247,19 +265,48 @@ async function checkForUpcomingEvents() {
 }
 
 async function scanPractiScoreTabs() {
-  scanResults.textContent = "Scanning...";
+  scanResults.textContent = "Scanning current tab...";
 
   try {
     const activeTab = await getActiveTab();
+    const activeUrl = activeTab?.url || activeTab?.pendingUrl;
+
+    if (!activeTab?.id || !isPractiScoreRegisterUrl(activeUrl)) {
+      scanResults.textContent = "Active tab is not a PractiScore register page.";
+      return;
+    }
+
     const response = await chrome.runtime.sendMessage({
       type: "scanPractiScoreTabs",
-      windowId: activeTab?.windowId
+      tabId: activeTab.id
     });
-    const results = Array.isArray(response?.results) ? response.results : [];
-    renderScanResults(results);
+
+    if (!response?.result) {
+      scanResults.textContent = response?.error || "Match information not found.";
+      return;
+    }
+
+    const result = response.result;
+    const eventName = result.eventName || result.title || result.url || "(Untitled tab)";
+    const hasMatchInfo = Boolean(result.matchStartISO && result.matchEndISO);
+
+    if (!hasMatchInfo) {
+      scanResults.textContent = `${eventName} — Match information not found.`;
+      return;
+    }
+
+    const toGoogleDate = (iso) => iso.replace(/[-:]/g, "").split(".")[0];
+    const googleStart = toGoogleDate(result.matchStartISO);
+    const googleEnd = toGoogleDate(result.matchEndISO);
+    const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
+      eventName
+    )}&dates=${googleStart}/${googleEnd}`;
+
+    await chrome.tabs.create({ windowId: activeTab.windowId, url: calendarUrl });
+    scanResults.textContent = "Google Calendar event opened in a new tab.";
   } catch (error) {
     console.error("PsCalendar tab scan failed:", error);
-    scanResults.textContent = "Unable to scan tabs.";
+    scanResults.textContent = "Unable to scan the current tab.";
   }
 }
 
